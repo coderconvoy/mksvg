@@ -1,3 +1,4 @@
+pub mod text;
 use std::io::Write;
 //use std::ops::Mul;
 use std::fmt::Display;
@@ -29,8 +30,8 @@ pub fn style(args:&[&str])->String{
 
 fn pad(d:u8)->String{
     let mut res = "".to_string();
-    for i in 0..d {
-        res.push_str("  " );
+    for _i in 0..d {
+        res.push_str("  ");
     }
     res
 }

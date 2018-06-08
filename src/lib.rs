@@ -1,30 +1,85 @@
 use std::io::Write;
+//use std::ops::Mul;
+use std::fmt::Display;
 
 pub struct Svg<W:Write> {
-    w:W
+    w:W,
+    d:u8,
+}
+
+//quoted
+pub fn q<T:Display>(t:T)->String{
+    format!("\"{}\"",t) 
+}
+
+pub fn st<T:Display>(s:&str,v:T)->String{
+    format!("{}:{};",s,v) 
+}
+
+//to be used in conjuction with fn st()
+//style(&[st(p,v),st(p,v) ...])
+pub fn style(args:&[&str])->String{
+    let mut res = "style=\"".to_string();
+    for a in args{
+        res.push_str(a)
+    }
+    res.push('\"');
+    res
+}
+
+fn pad(d:u8)->String{
+    let mut res = "".to_string();
+    for i in 0..d {
+        res.push_str("  " );
+    }
+    res
 }
 
 impl<W:Write> Svg<W> {
     pub fn new(w:W)->Svg<W>{
         Svg{
             w:w,
+            d:0,
         }
     }
 
-    pub fn start(&mut self,w:i32,h:i32){
+    pub fn start<T:Display>(&mut self,w:T,h:T){
         write!(self.w,"<?xml version=\"1.0\" ?>\n").unwrap();
         write!(self.w,
-               "<svg width=\"{}\" height=\"{}\"
-  1      xmlns=\"http://www.w3.org/2000/svg\"
-  2      xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",w,h,
+               "<svg width={} height={}
+    xmlns=\"http://www.w3.org/2000/svg\"
+    xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n",q(w),q(h),
                ).unwrap();
+        self.d += 1;
     }
 
     pub fn end(&mut self){
-        write!(self.w,"</svg>\n");
+        self.d -= 1;
+        write!(self.w,"</svg>\n").unwrap();
     }
 
-    
+    pub fn g_translate<T:Display>(&mut self, x:T,y:T,args:&str){
+        write!(self.w,"{}<g transform=\"translate({},{}) {}\">\n",pad(self.d),x,y,args).unwrap();
+        self.d += 1;
+    }
+
+    pub fn g(&mut self,args:&str ){
+        write!(self.w,"{}<g {}>\n",pad(self.d),args).unwrap();
+        self.d += 1;
+    }
+
+    pub fn any(&mut self,name:&str,args:&str){
+        write!(self.w,"{}<{} {} />\n",pad(self.d),name,args).unwrap();
+    }
+
+    pub fn rect<T:Display>(&mut self,x:T,y:T,w:T,h:T,args:&str){
+        self.any("rect",&format!("x={} y={} width={} height={} {}",q(x),q(y),q(w),q(h),args));
+    }
+
+    pub fn g_end(&mut self){
+        self.d -=1;
+        write!(self.w,"{}</g>\n",pad(self.d)).unwrap();
+    }
 }
 
 
@@ -33,6 +88,7 @@ impl<W:Write> Svg<W> {
 #[cfg(test)]
 mod tests {
     use Svg;
+    use {style,st};
     use std::str;
     #[test]
     fn it_works() {
@@ -50,6 +106,11 @@ mod tests {
         };
         print!("{}",res);
         assert!(s.w.len() > 0);
+    }
+
+    #[test]
+    fn style_t(){
+        assert_eq!(style(&[&st("num",3),&st("st","hello")]),"style=\"num:3;st:hello;\"");
     }
 
 }

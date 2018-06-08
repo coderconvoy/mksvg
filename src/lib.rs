@@ -1,6 +1,7 @@
 pub mod text;
 use std::io::Write;
-//use std::ops::Mul;
+use std::ops::Mul;
+use std::ops::Add;
 use std::fmt::Display;
 
 pub struct Svg<W:Write> {
@@ -69,18 +70,43 @@ impl<W:Write> Svg<W> {
         self.d += 1;
     }
 
+    pub fn g_end(&mut self){
+        self.d -=1;
+        write!(self.w,"{}</g>\n",pad(self.d)).unwrap();
+    }
+
     pub fn any(&mut self,name:&str,args:&str){
         write!(self.w,"{}<{} {} />\n",pad(self.d),name,args).unwrap();
     }
+    
+    pub fn anyopen(&mut self,name:&str,args:&str){
+        write!(self.w,"{}<{} {} >",pad(self.d),name,args).unwrap();
+    }
+
 
     pub fn rect<T:Display>(&mut self,x:T,y:T,w:T,h:T,args:&str){
         self.any("rect",&format!("x={} y={} width={} height={} {}",q(x),q(y),q(w),q(h),args));
     }
 
-    pub fn g_end(&mut self){
-        self.d -=1;
-        write!(self.w,"{}</g>\n",pad(self.d)).unwrap();
+    pub fn text<T:Display>(&mut self,tx:&str,x:T,y:T,fs:T,args:&str,styles:&[&str]){
+        
+        let mut sty = st("font-size",fs);
+        for s in styles {
+            sty.push_str(s);
+        }
+        self.anyopen("text",&format!("x={} y={} {} {}",q(x),q(y),args,style(&[&sty])));
+        write!(self.w,"{}</text>",tx).unwrap();
     }
+
+    pub fn lines<T:Copy +Display + Mul + Add<Output=T>>(&mut self,tx:&str,x:T,y:T,fs:T,dy:T,args:&str,styles:&[&str]){
+        let lns = tx.split("\n"); 
+        let mut ln_y:T = y;
+        for ln in lns{
+            self.text(&ln,x,ln_y,fs,args,styles);
+            ln_y = ln_y+  dy;
+        }
+    }
+
 }
 
 

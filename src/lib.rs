@@ -1,8 +1,9 @@
 pub mod text;
+pub mod cdnum;
 use std::io::Write;
-use std::ops::Mul;
-use std::ops::Add;
 use std::fmt::Display;
+use cdnum::CDNum;
+
 
 pub struct Svg<W:Write> {
     w:W,
@@ -45,7 +46,7 @@ impl<W:Write> Svg<W> {
         }
     }
 
-    pub fn start<T:Display>(&mut self,w:T,h:T){
+    pub fn start<T:CDNum>(&mut self,w:T,h:T){
         write!(self.w,"<?xml version=\"1.0\" ?>\n").unwrap();
         write!(self.w,
                "<svg width={} height={}
@@ -60,7 +61,7 @@ impl<W:Write> Svg<W> {
         write!(self.w,"</svg>\n").unwrap();
     }
 
-    pub fn g_translate<T:Display>(&mut self, x:T,y:T,args:&str){
+    pub fn g_translate<T:CDNum>(&mut self, x:T,y:T,args:&str){
         write!(self.w,"{}<g transform=\"translate({},{}) {}\">\n",pad(self.d),x,y,args).unwrap();
         self.d += 1;
     }
@@ -84,11 +85,11 @@ impl<W:Write> Svg<W> {
     }
 
 
-    pub fn rect<T:Display>(&mut self,x:T,y:T,w:T,h:T,args:&str){
+    pub fn rect<T:CDNum>(&mut self,x:T,y:T,w:T,h:T,args:&str){
         self.any("rect",&format!("x={} y={} width={} height={} {}",q(x),q(y),q(w),q(h),args));
     }
 
-    pub fn text<T:Display>(&mut self,tx:&str,x:T,y:T,fs:T,args:&str,styles:&[&str]){
+    pub fn text<T:CDNum>(&mut self,tx:&str,x:T,y:T,fs:T,args:&str,styles:&[&str]){
         
         let mut sty = st("font-size",fs);
         for s in styles {
@@ -98,7 +99,7 @@ impl<W:Write> Svg<W> {
         write!(self.w,"{}</text>",tx).unwrap();
     }
 
-    pub fn lines<T:Copy +Display + Mul + Add<Output=T>>(&mut self,tx:&str,x:T,y:T,fs:T,dy:T,args:&str,styles:&[&str]){
+    pub fn lines<T:CDNum>(&mut self,tx:&str,x:T,y:T,fs:T,dy:T,args:&str,styles:&[&str]){
         let lns = tx.split("\n"); 
         let mut ln_y:T = y;
         for ln in lns{
@@ -114,9 +115,9 @@ impl<W:Write> Svg<W> {
 
 #[cfg(test)]
 mod tests {
-    use Svg;
-    use {style,st};
+    use {Svg,style,st};
     use std::str;
+
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);
@@ -126,7 +127,7 @@ mod tests {
     fn maker() {
         let v = Vec::new();
         let mut s = Svg::new(v);
-        s.start(45,34); 
+        s.start(45 ,34 ); 
         let res = match str::from_utf8(&s.w){
             Ok(r)=>r,
             _=>"NoConv",

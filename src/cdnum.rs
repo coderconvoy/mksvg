@@ -1,12 +1,12 @@
-extern crate num;
-
 
 use std::fmt::Display;
+use num;
 
-pub trait CDNum:num::Num + Copy + Display{}
+pub trait CDNum:num::Num+num::NumCast+ Copy + Display{}
 
 
 
+//impl CDNum for integer{}
 impl CDNum for usize{}
 impl CDNum for i32{}
 impl CDNum for i64{}

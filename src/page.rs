@@ -24,7 +24,7 @@ pub fn page<W:Write,NT:CDNum,C:Card<NT>>(w:W,pw:NT,ph:NT,nw:usize,nh:usize,cards
 
     for (i,c) in cards.iter().enumerate(){
         let x:NT = qcast(i % nw);
-        let y:NT = qcast(i / nh);
+        let y:NT = qcast(i / nw);
         svg.g_translate(mw+ x*cw,mh+y*ch,"");
         c.front(&mut svg,cw,ch);
         svg.g_end();
@@ -62,4 +62,9 @@ pub fn pages<NT:CDNum,C:Card<NT>>(basepath:&str,pw:NT,ph:NT,nw:usize,nh:usize,ca
 
 pub fn pages_a4<NT:CDNum,C:Card<NT>>(basepath:&str,nw:usize,nh:usize,cards:&[C])->Result<bool,String>{
     pages(basepath,qcast::<i32,NT>(2480),qcast::<i32,NT>(3508),nw,nh,cards)
+}
+
+pub fn page_flip<T:Clone>(v:&Vec<T>,w:usize)->Vec<T>{
+    //TODO
+    Vec::new();    
 }

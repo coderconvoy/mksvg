@@ -131,6 +131,10 @@ pub trait Svg {
         }
     }
 
+    fn img<T:CDNum>(&mut self,loc:&str,x:T,y:T,w:T,h:T){
+        self.any("image",&format!("x={} y={} width={} height={} xlink:href={}",q(x),q(y),q(w),q(h),q(loc)));
+    }
+
 }
 
 

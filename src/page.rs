@@ -66,5 +66,5 @@ pub fn pages_a4<NT:CDNum,C:Card<NT>>(basepath:&str,nw:usize,nh:usize,cards:&[C])
 
 pub fn page_flip<T:Clone>(v:&Vec<T>,w:usize)->Vec<T>{
     //TODO
-    Vec::new();    
+    Vec::new()    
 }

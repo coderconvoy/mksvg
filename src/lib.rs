@@ -109,6 +109,9 @@ pub trait Svg {
     fn rect<T:CDNum>(&mut self,x:T,y:T,w:T,h:T,args:&str){
         self.any("rect",&format!("x={} y={} width={} height={} {}",q(x),q(y),q(w),q(h),args));
     }
+    fn ellipse<T:CDNum>(&mut self,cx:T,cy:T,rx:T,ry:T,args:&str){
+        self.any("ellipse",&format!("cx={} cy={} rx={} ry={} {}",q(cx),q(cy),q(rx),q(ry),args));
+    }
 
     fn text<T:CDNum>(&mut self,tx:&str,x:T,y:T,fs:T,args:&str,styles:&[&str]){
         

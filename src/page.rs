@@ -1,5 +1,7 @@
 use std::io::Write;
+use std::ffi::{OsStr,OsString};
 use std::fs::File;
+use std::path::{Path,PathBuf};
 use {Svg,SvgW,qcast};
 use cdnum::CDNum;
 
@@ -42,25 +44,33 @@ pub fn page_a4<W:Write,NT:CDNum,C:Card<NT>>(w:W,nw:usize,nh:usize,cards:&[C]){
     page(w,qcast::<i32,NT>(2480),qcast::<i32,NT>(3508),nw,nh,cards);
 }
 
-pub fn pages<NT:CDNum,C:Card<NT>>(basepath:&str,pw:NT,ph:NT,nw:usize,nh:usize,cards:&[C])->Result<bool,String>{
+pub fn pages<NT:CDNum,C:Card<NT>,P:AsRef<Path>>(basepath:P,pw:NT,ph:NT,nw:usize,nh:usize,cards:&[C])->Vec<PathBuf>{
+    let mut res = Vec::new();
     let total = nw * nh; 
-    for i in 0 .. cards.len() %total {
-        let mut fname = basepath.to_string();
-        fname.push_str(&i.to_string());
-        fname.push_str(".svg");
-        let w = match File::create(&fname) {
+
+    let cpath:&Path = basepath.as_ref();
+    let cname = OsString::from(cpath.file_name().unwrap_or(&OsStr::new("")));
+
+
+    for i in 0 .. (cards.len()-1 /total) +1 {
+        let mut path = PathBuf::from(cpath.parent().unwrap_or(Path::new("")));
+        let mut fname = cname.clone();
+        fname.push(&format!("{}.svg",i));
+        path.push(fname);
+        let w = match File::create(&path) {
             Ok(f)=>f,
             Err(_)=>{
-                return Err(format!("could not create {}",fname));
+                return res
             }
         };
-        page(w,pw,ph,nw,nh,cards);//TODO work out which slice
+        page(w,pw,ph,nw,nh,&cards[i..]);
+        res.push(path);
     }
-    Ok(true)
+    res 
 }
 
 
-pub fn pages_a4<NT:CDNum,C:Card<NT>>(basepath:&str,nw:usize,nh:usize,cards:&[C])->Result<bool,String>{
+pub fn pages_a4<NT:CDNum,C:Card<NT>,P:AsRef<Path>>(basepath:P,nw:usize,nh:usize,cards:&[C])->Vec<PathBuf>{
     pages(basepath,qcast::<i32,NT>(2480),qcast::<i32,NT>(3508),nw,nh,cards)
 }
 
@@ -91,6 +101,10 @@ pub fn page_flip<T:Clone>(v:&Vec<T>,w:usize)->Vec<T>{
         }
     }
     res
+}
+
+pub fn unite_as_pdf(v:Vec<String>)->bool{
+
 }
 
 

@@ -66,5 +66,41 @@ pub fn pages_a4<NT:CDNum,C:Card<NT>>(basepath:&str,nw:usize,nh:usize,cards:&[C])
 
 pub fn page_flip<T:Clone>(v:&Vec<T>,w:usize)->Vec<T>{
     //TODO
-    Vec::new()    
+    let mut res:Vec<T> = Vec::new();
+    if v.len() == 0 {
+        return res;
+    }
+    let blank = v[0].clone();
+    let mut tmp = Vec::new();
+    for elem in v {
+        tmp.push(elem.clone());
+        if tmp.len() == w {
+            for e2 in tmp.into_iter().rev() {
+                res.push(e2);
+            }
+            tmp = Vec::new();
+        }
+    }
+
+    if tmp.len() > 0{
+        for _ in 0 .. w - tmp.len(){
+            res.push(blank.clone());
+        }
+        for elem in tmp {
+            res.push(elem);
+        }
+    }
+    res
+}
+
+
+#[cfg(test)]
+mod tests {
+    use page::page_flip;
+    #[test]
+    fn test_flip() {
+        let v = vec![1,2,3,4,5,6,7,8,9];
+        let v2 = page_flip(&v,4);
+        assert_eq!(v2,vec![4,3,2,1,8,7,6,5,1,1,1,9]);
+    }
 }

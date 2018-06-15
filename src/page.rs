@@ -4,6 +4,7 @@ use std::fs::File;
 use std::path::{Path,PathBuf};
 use {Svg,SvgW,qcast};
 use cdnum::CDNum;
+use std::process::Command;
 
 
 pub trait Card<NT:CDNum> :Clone{
@@ -52,7 +53,9 @@ pub fn pages<NT:CDNum,C:Card<NT>,P:AsRef<Path>>(basepath:P,pw:NT,ph:NT,nw:usize,
     let cname = OsString::from(cpath.file_name().unwrap_or(&OsStr::new("")));
 
 
-    for i in 0 .. (cards.len()-1 /total) +1 {
+    //print!("\n{}\n",(cards.len()-1/total) +1);
+    for i in 0 .. ((cards.len()-1) /total) +1 {
+     //   print!("{}",i);
         let mut path = PathBuf::from(cpath.parent().unwrap_or(Path::new("")));
         let mut fname = cname.clone();
         fname.push(&format!("{}.svg",i));
@@ -103,8 +106,31 @@ pub fn page_flip<T:Clone>(v:&Vec<T>,w:usize)->Vec<T>{
     res
 }
 
-pub fn unite_as_pdf(v:Vec<String>)->bool{
+pub fn unite_as_pdf<P:AsRef<Path>,Q:AsRef<Path>>(v:Vec<P>,fpath:Q)->bool{
+    let mut pdv:Vec<String> = Vec::new();  
+    for i in v {
 
+        //get .pdf path
+        let op= PathBuf::from(i.as_ref());
+        let mut pp = op.clone();
+        pp.set_extension("pdf"); 
+
+        let pps = pp.to_str().unwrap_or("cc.pdf");
+        print!("Creating : {}",pps);
+
+
+        let _output = Command::new("inkscape")
+            .arg(op).arg(&format!("--export-pdf={}",pps))
+            .output().expect("Could not run process");
+
+        pdv.push(pps.to_string());
+    }
+
+    pdv.push(fpath.as_ref().to_str().unwrap_or("pooyt4.pdf").to_string());
+    print!("Combining");
+    Command::new("pdfunite").args(pdv).output().expect("could not unite the pdfs");
+
+    true
 }
 
 

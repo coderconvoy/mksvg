@@ -3,6 +3,8 @@ pub mod text;
 pub mod cdnum;
 pub mod page;
 
+pub use page::Card;
+
 use std::io::Write;
 use std::fmt::Display;
 use cdnum::CDNum;

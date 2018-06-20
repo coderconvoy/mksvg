@@ -31,7 +31,7 @@ pub fn page<W:Write,NT:CDNum,C:Card<NT>>(w:W,pw:NT,ph:NT,nw:usize,nh:usize,cards
         svg.g_translate(mw+ x*cw,mh+y*ch,"");
         c.front(&mut svg,cw,ch);
         svg.g_end();
-        if i == max {
+        if i+1 == max {
             break;
         }
     }
@@ -53,6 +53,9 @@ pub fn pages<NT:CDNum,C:Card<NT>,P:AsRef<Path>>(basepath:P,pw:NT,ph:NT,nw:usize,
     let cname = OsString::from(cpath.file_name().unwrap_or(&OsStr::new("")));
 
 
+    if cards.len() == 0 {
+        return res;
+    }
     //print!("\n{}\n",(cards.len()-1/total) +1);
     for i in 0 .. ((cards.len()-1) /total) +1 {
      //   print!("{}",i);
@@ -66,7 +69,7 @@ pub fn pages<NT:CDNum,C:Card<NT>,P:AsRef<Path>>(basepath:P,pw:NT,ph:NT,nw:usize,
                 return res
             }
         };
-        page(w,pw,ph,nw,nh,&cards[i..]);
+        page(w,pw,ph,nw,nh,&cards[i*total..]);
         res.push(path);
     }
     res 

@@ -87,10 +87,13 @@ pub trait Svg {
     }
 
     fn g_translate<T:CDNum>(&mut self, x:T,y:T,args:&str){
-        self.write(&format!(
-            "<g transform=\"translate({},{}) {}\">\n",x,y,args,
+        self.g(&format!(
+            r#"transform="translate({},{})" {}"#,x,y,args,
         ));
-        self.inc_depth(1);
+    }
+
+    fn g_rotate<A:CDNum, T:CDNum>(&mut self,ang:A, x:T,y:T,args:&str){
+        self.g(&format!(r#"transform="rotate({},{},{})" {}"#,ang,x,y,args));
     }
 
     fn g(&mut self,args:&str ){
@@ -125,6 +128,21 @@ pub trait Svg {
                 "<text x={} y={} {} {}>{}</text>",q(x),q(y),args,
                 style(&[&sty]),tx,
         ));
+    }
+
+    fn bg_text<T:CDNum>(&mut self,tx:&str,x:T,y:T,fs:T,sw:T,scol:&str,args:&str,styles:&[&str]){
+        let mut b_tx = st("stroke-width",&sw);
+        b_tx.push_str(&st("stroke",&scol));
+
+        let mut f_tx = "stroke:none;";
+
+        let mut back = styles.clone().to_vec();
+        back.push(&b_tx);
+        self.text(tx,x,y,fs,args,&back);
+
+        let mut front = styles.clone().to_vec();
+        front.push(f_tx);
+        self.text(tx,x,y,fs,args,&front);
     }
 
     fn text_lines<T:CDNum>(&mut self,tx:&str,x:T,y:T,fs:T,dy:T,args:&str,styles:&[&str]){

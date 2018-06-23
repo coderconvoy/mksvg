@@ -109,6 +109,26 @@ pub fn page_flip<T:Clone>(v:&Vec<T>,w:usize)->Vec<T>{
     res
 }
 
+pub fn interlace<T:Clone>(a:Vec<T>,b:Vec<T>)->Vec<T>{
+    let mut it_a = a.iter();
+    let mut it_b = b.iter();
+    let mut res:Vec<T> = Vec::new();
+    loop {
+        let mut done = 0;
+        match it_a.next(){
+            Some(t)=>res.push(t.clone()),
+            None=>done += 1,
+        }
+        match it_b.next(){
+            Some(t)=>res.push(t.clone()),
+            None=>done+= 1,
+        }
+        if done == 2 {
+            return res;
+        }
+    }
+}
+
 pub fn unite_as_pdf<P:AsRef<Path>,Q:AsRef<Path>>(v:Vec<P>,fpath:Q)->bool{
     let mut pdv:Vec<String> = Vec::new();  
     for i in v {
